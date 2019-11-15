@@ -10,7 +10,8 @@ public class ATM {
     public static final int VIEW = 1;
     public static final int DEPOSIT = 2;
     public static final int WITHDRAW = 3;
-    public static final int LOGOUT = 4;
+    public static final int TRANSFER = 4;
+    public static final int LOGOUT = 5;
     
     ////////////////////////////////////////////////////////////////////////////
     //                                                                        //
@@ -44,6 +45,7 @@ public class ATM {
             int pin = in.nextInt();
             
             if (isValidLogin(accountNo, pin)) {
+            	activeAccount = bank.login(accountNo, pin);
                 System.out.println("\nHello, again, " + activeAccount.getAccountHolder().getFirstName() + "!\n");
                 
                 boolean validLogin = true;
@@ -67,14 +69,21 @@ public class ATM {
     }
     
     public boolean isValidLogin(long accountNo, int pin) {
-        return accountNo == activeAccount.getAccountNo() && pin == activeAccount.getPin();
+    	boolean isValid = false;
+    	try {
+    		isValid = bank.login(accountNo, pin) != null ? true : false;
+    	} catch (Exception e) {
+    		isValid = false;
+    	}
+        return isValid;
     }
     
     public int getSelection() {
         System.out.println("[1] View balance");
         System.out.println("[2] Deposit money");
         System.out.println("[3] Withdraw money");
-        System.out.println("[4] Logout");
+        System.out.println("[4] Transfer money");
+        System.out.println("[5] Logout");
         
         return in.nextInt();
     }
@@ -97,6 +106,13 @@ public class ATM {
         
         activeAccount.withdraw(amount);
         System.out.println();
+    }
+    
+    public void transfer() {
+    	System.out.print("\nEnter amount: ");
+        double amount = in.nextDouble();
+        
+        
     }
     
     public void shutdown() {
