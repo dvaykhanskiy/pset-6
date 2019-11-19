@@ -13,6 +13,10 @@ public class ATM {
     public static final int TRANSFER = 4;
     public static final int LOGOUT = 5;
     
+    public static final int INVALID = 0;
+    public static final int INSUFFICIENT = 1;
+    public static final int SUCCESS = 2;
+    
     ////////////////////////////////////////////////////////////////////////////
     //                                                                        //
     // Refer to the Simple ATM tutorial to fill in the details of this class. //
@@ -54,6 +58,7 @@ public class ATM {
                         case VIEW: showBalance(); break;
                         case DEPOSIT: deposit(); break;
                         case WITHDRAW: withdraw(); break;
+                        case TRANSFER: transfer(); break;
                         case LOGOUT: validLogin = false; break;
                         default: System.out.println("\nInvalid selection.\n"); break;
                     }
@@ -109,10 +114,22 @@ public class ATM {
     }
     
     public void transfer() {
-    	System.out.print("\nEnter amount: ");
+    	boolean valid = true;
+    	System.out.print("\nEnter account: ");
+        long newAccountNumber = in.nextLong();
+        System.out.print("\nEnter amount:");
         double amount = in.nextDouble();
-        
-        
+        BankAccount transferAccount = bank.getAccount(newAccountNumber);
+        if (bank.getAccount(newAccountNumber) == null) {
+        	valid = false;
+        }
+        if (valid) {
+        activeAccount.withdraw(amount);
+        transferAccount.deposit(amount);
+        System.out.print("Transfer accepted.");
+        } else {
+        	System.out.print("\nTransfer denied.\n");
+        }
     }
     
     public void shutdown() {
