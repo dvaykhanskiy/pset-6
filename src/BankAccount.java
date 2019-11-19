@@ -34,12 +34,26 @@ public class BankAccount {
         return accountHolder;
     }
     
-    public void deposit(double amount) {
-        balance = balance + amount;
+    public int deposit(double amount) {
+        if (amount <= 0) {
+            return ATM.INVALID;    
+        } else {
+            balance = balance + amount;
+        }
+            
+        return ATM.SUCCESS;
     }
-    
-    public void withdraw(double amount) {
-        balance = balance - amount;
+
+    public int withdraw(double amount) {
+        if (amount <= 0) {
+            return ATM.INVALID;
+        } else if (amount > balance) {
+            return ATM.INSUFFICIENT;
+        } else {
+            balance = balance - amount;
+        }
+        
+        return ATM.SUCCESS;
     }
     ////////////////////////////////////////////////////////////////////////////
     //                                                                        //
