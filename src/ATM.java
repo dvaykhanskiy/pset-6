@@ -13,6 +13,9 @@ public class ATM {
     public static final int WITHDRAW = 3;
     public static final int TRANSFER = 4;
     public static final int LOGOUT = 5;
+    public static final int FIRST_NAME_WIDTH = 20;
+    public static final int LAST_NAME_WIDTH = 20;
+    
     
     public static final int INVALID = 0;
     public static final int INSUFFICIENT = 1;
@@ -60,7 +63,6 @@ public class ATM {
         }else {
         	in.nextLine();
         	return 0;
-        	
         }
     }
     
