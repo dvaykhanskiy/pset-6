@@ -6,7 +6,7 @@ public class ATM {
     private Scanner in;
     private BankAccount activeAccount;
     private Bank bank;
-    private User user;
+    private User newUser;
     
     public static final int VIEW = 1;
     public static final int DEPOSIT = 2;
@@ -46,9 +46,11 @@ public class ATM {
     	System.out.println("\nLast name:");
     	String lastName = in.nextLine();
     	System.out.println("\nPin:");
-    	String pin = in.nextInt();
+    	int pin = in.nextInt();
     	
     	newUser = new User(firstName, lastName);
+    	bank.createAccount(pin, newUser);
+    	bank.save();
     }
     
     public void startup() {
@@ -59,7 +61,8 @@ public class ATM {
             if (in.hasNextLong()) {
             long accountNo = in.nextLong();
             } else if (in.nextLine().strip().equals("+")) {
-            	
+            	long accountNo = 0;
+            	newAccount();
             }
             
             System.out.print("PIN        : ");
@@ -120,17 +123,30 @@ public class ATM {
     }
     
     public void deposit() {
-        System.out.print("\nEnter amount: ");
-        double amount = in.nextDouble();
+    	double amount = 0;
+		boolean validAmount = true;
+		System.out.print("\nEnter amount: ");
+		try {
+			amount = in.nextDouble();
+		}catch(Exception e) {
+			validAmount = false;
+			in.nextLine();
+		}
+		
+		if(validAmount) {
+			int status = activeAccount.deposit(amount);
+            if (status == ATM.INVALID) {
+                System.out.println("\nDeposit rejected. Amount must be greater than $0.00.\n"); 
+            } else if(status == ATM.OVERFLOW) {
+            	System.out.println("\nDeposit rejected. Amount would cause balance to exceed $999,999,999,999.99.\n");
+            }else if (status == ATM.SUCCESS) {
+                System.out.println("\nDeposit accepted.\n");
+                bank.save();
+            }
+		}else {
+			System.out.println("\nDeposit rejected. Enter vaild amount.\n");
+		}
         
-        int status = activeAccount.deposit(amount);
-        if (status == ATM.INVALID) {
-            System.out.println("\nDeposit rejected. Amount must be greater than $0.00.\n");
-        } else if (amount + balance >= 999999999999.99) {
-        	ATM.OVERFLOW;
-        } else if (status == ATM.SUCCESS) {
-            System.out.println("\nDeposit accepted.\n");
-        }
     }
     
     public void withdraw() {
@@ -138,7 +154,7 @@ public class ATM {
         System.out.print("\nEnter amount: ");
         double amount = in.nextDouble();
         try {
-        	amount = in.nextDouble()
+        	amount = in.nextDouble();
         } catch (Exception e) {
         	valid = false;
         	in.nextLine();
