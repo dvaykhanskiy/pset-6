@@ -53,42 +53,62 @@ public class ATM {
     	bank.save();
     }
     
+    public int getPin() {
+    	System.out.print("PIN        : ");
+        if(in.hasNextInt()) {
+        	return in.nextInt();
+        }else {
+        	in.nextLine();
+        	return 0;
+        	
+        }
+    }
+    
     public void startup() {
+    	long accountNo;
+    	int pin;
         System.out.println("Welcome to the AIT ATM!\n");
-        
+     
         while (true) {
             System.out.print("Account No.: ");
-            if (in.hasNextLong()) {
-            long accountNo = in.nextLong();
-            } else if (in.nextLine().strip().equals("+")) {
-            	long accountNo = 0;
+            if(in.hasNextLong()) {
+            	accountNo = in.nextLong();
+            	pin = getPin();
+            	login(accountNo, pin);
+            }else if(in.nextLine().strip().equals("+")){
+            	accountNo = 0;
             	newAccount();
+            }else {
+            	accountNo = 0;
+            	pin = getPin();
+            	in.nextLine();
+            	login(accountNo, pin);
+            }       
+            
+        	
+        }
+    }
+    
+    public void login(long accountNo, int pin) {
+    	if (isValidLogin(accountNo, pin)) {
+        	activeAccount = bank.login(accountNo, pin);
+            System.out.println("\nHello, again, " + activeAccount.getAccountHolder().getFirstName() + "!\n");
+            boolean validLogin = true;
+            while (validLogin) {
+                switch (getSelection()) {
+                    case VIEW: showBalance(); break;
+                    case DEPOSIT: deposit(); break;
+                    case WITHDRAW: withdraw(); break;
+                    case TRANSFER: transfer(); break;
+                    case LOGOUT: validLogin = false; break;
+                    default: System.out.println("\nInvalid selection.\n"); break;
+                }
             }
-            
-            System.out.print("PIN        : ");
-            int pin = in.nextInt();
-            
-            if (isValidLogin(accountNo, pin)) {
-            	activeAccount = bank.login(accountNo, pin);
-                System.out.println("\nHello, again, " + activeAccount.getAccountHolder().getFirstName() + "!\n");
-                
-                boolean validLogin = true;
-                while (validLogin) {
-                    switch (getSelection()) {
-                        case VIEW: showBalance(); break;
-                        case DEPOSIT: deposit(); break;
-                        case WITHDRAW: withdraw(); break;
-                        case TRANSFER: transfer(); break;
-                        case LOGOUT: validLogin = false; break;
-                        default: System.out.println("\nInvalid selection.\n"); break;
-                    }
-                }
+        } else {
+            if (accountNo == -1 && pin == -1) {
+                shutdown();
             } else {
-                if (accountNo == -1 && pin == -1) {
-                    shutdown();
-                } else {
-                    System.out.println("\nInvalid account number and/or PIN.\n");
-                }
+                System.out.println("\nInvalid account number and/or PIN.\n");
             }
         }
     }
