@@ -6,6 +6,7 @@ public class ATM {
     private Scanner in;
     private BankAccount activeAccount;
     private Bank bank;
+    private User user;
     
     public static final int VIEW = 1;
     public static final int DEPOSIT = 2;
@@ -39,12 +40,27 @@ public class ATM {
 		}
     }
     
+    public void newAccount() {
+    	System.out.println("\nFirst name:");
+    	String firstName = in.nextLine();
+    	System.out.println("\nLast name:");
+    	String lastName = in.nextLine();
+    	System.out.println("\nPin:");
+    	String pin = in.nextInt();
+    	
+    	newUser = new User(firstName, lastName);
+    }
+    
     public void startup() {
         System.out.println("Welcome to the AIT ATM!\n");
         
         while (true) {
             System.out.print("Account No.: ");
+            if (in.hasNextLong()) {
             long accountNo = in.nextLong();
+            } else if (in.nextLine().strip().equals("+")) {
+            	
+            }
             
             System.out.print("PIN        : ");
             int pin = in.nextInt();
