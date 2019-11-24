@@ -80,7 +80,8 @@ public class ATM {
             }else if(in.nextLine().strip().equals("+")){
             	accountNo = 0;
             	newAccount();
-            }else {
+            	System.out.print("Thank you.  Your account number is " + newAccount.getAccountNo() + ".");
+            	System.out.print("\nPlease log in to access your newly created account.\n");
             	accountNo = 0;
             	pin = getPin();
             	in.nextLine();
