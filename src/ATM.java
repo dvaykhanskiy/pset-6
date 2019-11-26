@@ -20,7 +20,7 @@ public class ATM {
     public static final int INVALID = 0;
     public static final int INSUFFICIENT = 1;
     public static final int SUCCESS = 2;
-    public static final int OVERFLOW = 3;
+    public static final int OVERFILL = 3;
     
     ////////////////////////////////////////////////////////////////////////////
     //                                                                        //
@@ -43,78 +43,163 @@ public class ATM {
 		}
     }
     
-    public void newAccount() {
-    	System.out.println("\nFirst name:");
-    	String firstName = in.nextLine();
-    	System.out.println("\nLast name:");
-    	String lastName = in.nextLine();
-    	System.out.println("\nPin:");
-    	int pin = in.nextInt();
-    	
-    	newUser = new User(firstName, lastName);
-    	bank.createAccount(pin, newUser);
-    	bank.save();
-    }
-    
-    public int getPin() {
-    	System.out.print("PIN        : ");
-        if(in.hasNextInt()) {
-        	return in.nextInt();
-        }else {
-        	in.nextLine();
-        	return 0;
-        }
-    }
-    
     public void startup() {
     	long accountNo;
     	int pin;
-        System.out.println("Welcome to the AIT ATM!\n");
-     
+        boolean createAccount = false;
+        System.out.println("Welcome to the AIT ATM!");
+
         while (true) {
-            System.out.print("Account No.: ");
-            if(in.hasNextLong()) {
-            	accountNo = in.nextLong();
-            	pin = getPin();
-            	login(accountNo, pin);
-            }else if(in.nextLine().strip().equals("+")){
-            	accountNo = 0;
-            	newAccount();
-            	System.out.print("Thank you.  Your account number is " + newAccount.getAccountNo() + ".");
-            	System.out.print("\nPlease log in to access your newly created account.\n");
-            	accountNo = 0;
-            	pin = getPin();
-            	in.nextLine();
-            	login(accountNo, pin);
-            }       
-            
-        	
+            System.out.print("\nAccount No.: ");
+            String tempAccNo = in.nextLine();
+            if (tempAccNo.isEmpty()) {
+                accountNo = 0;
+            } else if (tempAccNo.charAt(0) == '+') {
+                accountNo = 0;
+                createAccount = true;
+            } else if (tempAccNo.matches("[0-9]+")) {
+                accountNo = Long.parseLong(tempAccNo);
+            } else if (tempAccNo.matches("-")) {
+                accountNo = 0;
+            } else if (!(tempAccNo.matches("[0-9]+")) && !(tempAccNo.contains("-")) ) {
+                accountNo = 0;
+            } else if (Long.parseLong(tempAccNo) == -1) {
+                accountNo = -1;
+            } else {
+                accountNo = 0;
+            }
+
+            if (!(createAccount)) {
+                System.out.print("PIN        : ");
+                String tempPin = in.nextLine();
+                if (tempPin.isEmpty()) {
+                    pin = 0;
+                } else if (tempPin.matches("[0-9]+")) {
+                    pin = Integer.parseInt(tempPin);
+                } else if (tempPin.matches("-")) {
+                    pin = 0;
+                } else if (!(tempPin.matches("[0-9]+")) && !(tempPin.contains("-")) ) {
+                    pin = 0;
+                } else if (Integer.parseInt(tempPin) == -1) {
+                    pin = -1;
+                } else {
+                    pin = 0;
+                }
+
+                if (isValidLogin(accountNo, pin)) {
+                	activeAccount = bank.login(accountNo, pin);
+                    System.out.println("\nHello, again, " + activeAccount.getAccountHolder().getFirstName() + "!\n");
+                    boolean validLogin = true;
+                    while (validLogin) {
+                        switch (getSelection()) {
+                            case VIEW: showBalance(); break;
+                            case DEPOSIT: deposit(); break;
+                            case WITHDRAW: withdraw(); break;
+                            case TRANSFER: transfer(); break;
+                            case LOGOUT: bank.update(activeAccount); bank.save(); validLogin = false; in.nextLine(); break;
+                            default: System.out.println("\nInvalid selection.\n"); break;
+                        }
+                    }
+                } else {
+                    if (accountNo == -1 && pin == -1) {
+                        shutdown();
+                    } else {
+                        System.out.println("\nInvalid account number and/or PIN.");
+                    }
+                }
+            } else {
+                System.out.print("\nFirst Name: ");
+            	String firstName = 	in.nextLine();
+
+            	if (firstName.length() <= 20 && firstName.length() > 0) {
+            		System.out.print("Last Name: ");
+                	String lastName = in.nextLine();
+
+                	if (lastName.length() <= 30 && lastName.length() > 0) {
+                		System.out.print("Pin: ");
+                       	if (in.hasNextInt()) {
+                    		pin = in.nextInt();
+                    		in.nextLine();
+
+                    		if (pin >= 1000 && pin <= 9999) {
+                    			newUser = new User(firstName, lastName);
+                            	BankAccount newAccount = bank.createAccount(pin, newUser);
+                            	System.out.print("\nThank you. Your account number is ");
+                                System.out.println(newAccount.getAccountNo() + ".");
+                            	System.out.println("Please login to access your newly created account.");
+                            	bank.update(newAccount);
+                            	bank.save();
+                                createAccount = false;
+                    		} else {
+                    			System.out.println("\nYour pin must be between 1000 and 9999.\n");
+                                createAccount = false;
+                    		}
+                        } else {
+                        	in.nextLine();
+                        	System.out.println("\nYour pin must be numeric.\n");
+                            createAccount = false;
+                        }
+                	} else {
+                		System.out.println("\nYour last name must be between 1 and 30 characters long.");
+                        createAccount = false;
+                	}
+            	} else {
+            		System.out.println("\nYour first name must be between 1 and 20 characters long.");
+                    createAccount = false;
+            	}
+            }
         }
+    }
+
+    
+    
+    
+    public void newAccount() {
+    	System.out.print("\nFirst Name: ");
+    	String firstName = 	in.nextLine();
+    	if(firstName.length() <= 20 && firstName.length() > 0) {
+    		System.out.print("Last Name: ");
+        	String lastName = in.nextLine();
+        	if(lastName.length() <= 30 && lastName.length() > 0){
+        		System.out.print("Pin: ");               	
+               	if(in.hasNextInt()) {
+            		int pin = in.nextInt();
+            		in.nextLine();
+            		if(pin >= 1000 && pin <= 9999) {
+            			newUser = new User(firstName, lastName);
+                    	BankAccount newAccount = bank.newAccount(pin, newUser);
+                    	System.out.println("\nThank you. Your account number is " + newAccount.getAccountNo() + ".");
+                    	System.out.println("Please login to access your newly created account.\n");
+                    	bank.update(newAccount);
+                    	bank.save();
+            		}else {
+            			System.out.println("\nYou pin must be between 1000 and 9999.\n");
+            		}
+            		
+                }else {
+                	in.nextLine();
+                	System.out.println("\nYou pin must be numeric.\n");
+                }          	
+        	}else {
+        		System.out.println("\nYour last name must be between 1 and 30 characters long\n");
+        	}
+    	}else {
+    		System.out.println("\nYour first name must be between 1 and 20 characters long\n");
+    	}
     }
     
-    public void login(long accountNo, int pin) {
-    	if (isValidLogin(accountNo, pin)) {
-        	activeAccount = bank.login(accountNo, pin);
-            System.out.println("\nHello, again, " + activeAccount.getAccountHolder().getFirstName() + "!\n");
-            boolean validLogin = true;
-            while (validLogin) {
-                switch (getSelection()) {
-                    case VIEW: showBalance(); break;
-                    case DEPOSIT: deposit(); break;
-                    case WITHDRAW: withdraw(); break;
-                    case TRANSFER: transfer(); break;
-                    case LOGOUT: validLogin = false; break;
-                    default: System.out.println("\nInvalid selection.\n"); break;
-                }
+    
+    public boolean isAccountNumber(String possibleNumber) {
+        boolean isNumber = true;
+        for (int i = 0; i < possibleNumber.length(); i++ ) {
+            char char1 = possibleNumber.charAt(i);
+            if (!Character.isDigit(char1)) {
+              isNumber = false;
             }
-        } else {
-            if (accountNo == -1 && pin == -1) {
-                shutdown();
-            } else {
-                System.out.println("\nInvalid account number and/or PIN.\n");
-            }
-        }
+          }
+        return isNumber;
     }
+    
     
     public boolean isValidLogin(long accountNo, int pin) {
     	boolean isValid = false;
@@ -160,7 +245,7 @@ public class ATM {
 			int status = activeAccount.deposit(amount);
             if (status == ATM.INVALID) {
                 System.out.println("\nDeposit rejected. Amount must be greater than $0.00.\n"); 
-            } else if(status == ATM.OVERFLOW) {
+            } else if(status == ATM.OVERFILL) {
             	System.out.println("\nDeposit rejected. Amount would cause balance to exceed $999,999,999,999.99.\n");
             }else if (status == ATM.SUCCESS) {
                 System.out.println("\nDeposit accepted.\n");
@@ -173,24 +258,30 @@ public class ATM {
     }
     
     public void withdraw() {
-    	boolean valid = true;
-        System.out.print("\nEnter amount: ");
-        double amount = in.nextDouble();
-        try {
-        	amount = in.nextDouble();
-        } catch (Exception e) {
-        	valid = false;
-        	in.nextLine();
-        }
-        int status = activeAccount.withdraw(amount);
-        if (status == ATM.INVALID) {
-            System.out.println("\nWithdrawal rejected. Amount must be greater than $0.00.\n");
-        } else if (status == ATM.INSUFFICIENT) {
-            System.out.println("\nWithdrawal rejected. Insufficient funds.\n");
-        } else if (status == ATM.SUCCESS) {
-            System.out.println("\nWithdrawal accepted.\n");
-        }
-    }
+		double amount = 0;
+		boolean validAmount = true;
+		System.out.print("\nEnter amount: ");
+		try {
+			amount = in.nextDouble();
+		}catch(Exception e) {
+			validAmount = false;
+			in.nextLine();
+		}
+		if(validAmount) {
+			int status = activeAccount.withdraw(amount);
+            if (status == ATM.INVALID) {
+                System.out.println("\nWithdrawal rejected. Amount must be greater than $0.00.\n");
+            } else if (status == ATM.INSUFFICIENT) {
+                System.out.println("\nWithdrawal rejected. Insufficient funds.\n");
+            } else if (status == ATM.SUCCESS) {
+                System.out.println("\nWithdrawal accepted.\n");
+                bank.update(activeAccount);
+                bank.save();
+            }
+		}else {
+			System.out.println("\nWithdrawal rejected. Enter vaild amount.\n");
+		}
+ }
     
     public void transfer() {
     	boolean valid = true;
