@@ -150,55 +150,6 @@ public class ATM {
             }
         }
     }
-
-    
-    
-    
-    public void newAccount() {
-    	System.out.print("\nFirst Name: ");
-    	String firstName = 	in.nextLine();
-    	if(firstName.length() <= 20 && firstName.length() > 0) {
-    		System.out.print("Last Name: ");
-        	String lastName = in.nextLine();
-        	if(lastName.length() <= 30 && lastName.length() > 0){
-        		System.out.print("Pin: ");               	
-               	if(in.hasNextInt()) {
-            		int pin = in.nextInt();
-            		in.nextLine();
-            		if(pin >= 1000 && pin <= 9999) {
-            			newUser = new User(firstName, lastName);
-                    	BankAccount newAccount = bank.newAccount(pin, newUser);
-                    	System.out.println("\nThank you. Your account number is " + newAccount.getAccountNo() + ".");
-                    	System.out.println("Please login to access your newly created account.\n");
-                    	bank.update(newAccount);
-                    	bank.save();
-            		}else {
-            			System.out.println("\nYou pin must be between 1000 and 9999.\n");
-            		}
-            		
-                }else {
-                	in.nextLine();
-                	System.out.println("\nYou pin must be numeric.\n");
-                }          	
-        	}else {
-        		System.out.println("\nYour last name must be between 1 and 30 characters long\n");
-        	}
-    	}else {
-    		System.out.println("\nYour first name must be between 1 and 20 characters long\n");
-    	}
-    }
-    
-    
-    public boolean isAccountNumber(String possibleNumber) {
-        boolean isNumber = true;
-        for (int i = 0; i < possibleNumber.length(); i++ ) {
-            char char1 = possibleNumber.charAt(i);
-            if (!Character.isDigit(char1)) {
-              isNumber = false;
-            }
-          }
-        return isNumber;
-    }
     
     
     public boolean isValidLogin(long accountNo, int pin) {
